@@ -52,7 +52,7 @@ contract Admin {
         // 创建表
 		//state 1为上架，0为下架,-1为删除
 		//这里的id只是为了能够方便选取设置的真正的id在commodity_info.id
-        tf.createTable("t_commodity", "id", "name,price,picture,descr,owner,state,rid");
+        tf.createTable("t_commodity", "id", "name,price,picture,descr,owner,state,rid,commodity_type");
 		
     }
 	
