@@ -108,8 +108,8 @@ contract User {
 		return entry;
 	
 	}
-	Entry entry=entries.get(0);
-	return entry;
+	Entry entry0=entries.get(0);
+	return entry0;
 	}
 
 	
@@ -206,7 +206,7 @@ contract User {
 	   Entries entries=table.select(id,table.newCondition());
 	   if(entries.size()==0)
 	   {
-		return ("NULL","NULL",0,-999)
+		return ("NULL","NULL",0,-999);
 	   }
 	   Entry entry=entries.get(0);
 	
@@ -218,8 +218,8 @@ contract User {
 	{
 		
 		Table table=open_transaction_table();
-		Condition condition=table.newCondition()
-		Condition.EQ("rid",rid);
+		Condition condition=table.newCondition();
+		condition.EQ("rid",rid);
 		Entries entries=table.select("key",condition);
 		if(entries.size()==0)
 		{
