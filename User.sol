@@ -625,14 +625,19 @@ contract User {
 				return -5;
 			}
 		}
+		if(entry.getInt("state")!=1)
+		{
+		emit  Initiate_arbitration(-2,user,t_id);
+			return -2;
 		
+		}
 		
 		
 		
 		Entry entry0=table_transaction.newEntry();
 			entry0=entry;
 			entry0.set("state",int256(0));				
-		
+	
 		int256 count=table_transaction.update("key",entry0,condition);
 		if(count!=1)
 		{
