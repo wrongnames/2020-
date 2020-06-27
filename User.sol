@@ -105,6 +105,7 @@ contract User {
 		entry.set("state",int256(-999));
 		entry.set("owner","NULL");
 		entry.set("rid",int256(-999));
+		entry.set("commodity_type",int256(-999));
 		return entry;
 	
 	}
@@ -155,7 +156,7 @@ contract User {
 		  entry.set("state",int256(commodity_state));
 		  entry.set("owner",string(user));
 		  entry.set("rid",id);
-		  
+		  entry.set("commodity_type",int256(-1));//-1表示没有设置分类
 		  int count = table_commodity.insert("key", entry);
 		   if (count == 1) {
                 // 成功
@@ -177,12 +178,12 @@ contract User {
 		 
 		 
 	//获取商品信息
-	function get_commodity_info(int256 id) public  returns(string,string,string,string,int256,int256,int256)
+	function get_commodity_info(int256 id) public  returns(string,string,string,string,int256,int256,int256,int256)
 	{
 		
 	   Entry entry=select_commodity(id);
  return(string(entry.getString("owner")),string(entry.getString("name")),string(entry.getString("picture")),string(entry.getString("descr")),int256(entry.getInt("price"))
-	   ,int256(entry.getInt("state")),int256(entry.getInt("rid")));
+	   ,int256(entry.getInt("state")),int256(entry.getInt("rid")),int256(entry.getInt("commodity_type")));
 
 	//如果不能得到返回值的话就用下面的代码,把返回类型改成returns(string,string,string,string,int256[])
 	//int256[] memory commodity_list=new int256[](uint256(3));
@@ -240,6 +241,27 @@ contract User {
 	Table table_commodity=open_commodity_table();
 	Condition condition=table_commodity.newCondition();
 	condition.EQ("state",int256(1));
+	Entries entries=table_commodity.select("key",condition);
+	int256 i=0;
+
+       int256[] memory commodity_list=new int256[](uint256(entries.size()));
+	for(i;i<entries.size();i++)
+	{
+		Entry entry=entries.get(i);
+		commodity_list[uint256(i)]=int256(entry.getInt("rid"));
+	}
+	
+	//delete commodity_list;
+	return (commodity_list,entries.size());
+	
+	}
+	
+	//获取特定的类型的商品
+	function get_onsale_type_list(int256 commodity_type)returns(int256[],int256){
+	Table table_commodity=open_commodity_table();
+	Condition condition=table_commodity.newCondition();
+	condition.EQ("state",int256(1));
+	condition.EQ("commodity_type",commodity_type);
 	Entries entries=table_commodity.select("key",condition);
 	int256 i=0;
 
@@ -322,7 +344,7 @@ contract User {
 	//返回-1用户问题
 	//1成功
 	//-2其他问题
-	function puton_commodity(string user , int256 id,int256 price) public returns(int256){
+	function puton_commodity(string user , int256 id,int256 price,int256 commodity_type) public returns(int256){
 	       int256 state=get_user_state(user);
 		   int256 ret=0;
 		   
@@ -343,6 +365,7 @@ contract User {
 		  }
 		  entry.set("state",int256(1));
 		  entry.set("price",price);
+		  entry.set("commodity_type",commodity_type);
 		  int256 count=table_commodity.update("key",entry,condition);
 		   if (count == 1) {
                 // 成功
