@@ -93,6 +93,21 @@ contract User {
 	condition.EQ("rid",id);
 	Entries entries = table_commodity.select("key",condition);
 	// 猜测是按顺序排序的
+	
+	if(entries.size()==0)
+	{
+		Entry entry=table_commodity.newEntry();
+		entry.set("id","NULL");
+		entry.set("name","NULL");
+		entry.set("price",int256(-999));
+		entry.set("picture","NULL");
+		entry.set("descr","NULL");
+		entry.set("state",int256(-999));
+		entry.set("owner","NULL");
+		entry.set("rid",int256(-999));
+		return entry;
+	
+	}
 	Entry entry=entries.get(0);
 	return entry;
 	}
@@ -189,10 +204,36 @@ contract User {
 
 	   Table table=open_user_table();
 	   Entries entries=table.select(id,table.newCondition());
+	   if(entries.size()==0)
+	   {
+		return ("NULL","NULL",0,-999)
+	   }
 	   Entry entry=entries.get(0);
-	   //这里为了方便把uint256专成了int256
+	
 	   return(string(entry.getString("id")),string(entry.getString("info")),uint256(entry.getUInt("balance")),int256(entry.getInt("state")));
 	}
+	
+	//获取交易信息
+	function get_transaction_info(int256 rid) public returns(string,string,string,int256,int256,int256)
+	{
+		
+		Table table=open_transaction_table();
+		Condition condition=table.newCondition()
+		Condition.EQ("rid",rid);
+		Entries entries=table.select("key",condition);
+		if(entries.size()==0)
+		{
+			return ("NULL","NULL","NULL",-999,-999,-999);
+		}
+		
+		Entry entry=entries.get(0);
+		//"user_sell,user_buy,commodity_id,price,descr,rid,state"
+		return (entry.getString("user_sell"),entry.getString("user_buy"),entry.getString("descr"),entry.getInt("commodity_id"),entry.getInt("price"),entry.getInt("state"));
+	
+	
+	}
+	
+	
 	
 	//获取出售商品列表
 	 function get_onsale_list() returns(int256[],int256){
