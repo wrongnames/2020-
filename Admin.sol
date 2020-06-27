@@ -407,7 +407,7 @@ contract Admin {
 		Entry entry0=table_transaction.newEntry();
 		//entry0.set("rid",int256(t_id));
 		//entry0.set("id",string("key"));
-		entry0.set("state",int256(0));
+		entry0.set("state",int256(-1));
 		int256 count=table_transaction.update("key",entry0,condition);
 		if(count!=1)
 		{
