@@ -215,7 +215,7 @@ contract User {
 	}
 	
 	//获取交易信息
-	function get_transaction_info(int256 rid) public returns(string,string,string,int256,int256,int256)
+	function get_transaction_info(int256 rid) public returns(string,string,string,string,int256,int256,int256)
 	{
 		
 		Table table=open_transaction_table();
@@ -224,15 +224,19 @@ contract User {
 		Entries entries=table.select("key",condition);
 		if(entries.size()==0)
 		{
-			return ("NULL","NULL","NULL",-999,-999,-999);
+			return ("NULL","NULL","NULL","NULL",-999,-999,-999);
 		}
 		
 		Entry entry=entries.get(0);
 		//"user_sell,user_buy,commodity_id,price,descr,rid,state"
-		return (entry.getString("user_sell"),entry.getString("user_buy"),entry.getString("descr"),entry.getInt("commodity_id"),entry.getInt("price"),entry.getInt("state"));
+		return (entry.getString("transaction_reason"),entry.getString("user_sell"),entry.getString("user_buy"),entry.getString("descr"),entry.getInt("commodity_id"),entry.getInt("price"),entry.getInt("state"));
 	
 	
 	}
+	
+	
+	
+	
 	
 	
 	
@@ -297,6 +301,47 @@ contract User {
 	return (commodity_list,entries.size());
 	
 	}
+	//获取需要仲裁的交易列表
+	function get_arbitration_list() public returns(int256 [],int256)
+	{
+		Table table_transaction=open_transaction_table();
+	Condition condition=table_transaction.newCondition();
+	condition.EQ("state",int256(0));
+	Entries entries=table_transaction.select("key",condition);
+	
+	
+	int256 i=0;
+
+       int256[] memory commodity_list=new int256[](uint256(entries.size()));
+	for(i;i<entries.size();i++)
+	{
+		Entry entry=entries.get(i);
+		commodity_list[uint256(i)]=int256(entry.getInt("rid"));
+	}
+	
+	//delete commodity_list;
+	return (commodity_list,entries.size());	
+	}
+	
+	//获取仲裁信息
+	function get_arbitration_reason(int256 id) public returns(string)
+	{
+		Table table_transaction=open_transaction_table();
+		Condition condition=table_transaction.newCondition();
+		condition.EQ("rid",id);
+		condition.EQ("state",0);
+		Entries entries=table_transaction.select("key",condition);
+		if(entries.size()==0)
+		{
+			string memory re="NULL";
+			return re;
+		}
+		Entry entry=entries.get(0);
+		
+		return entry.getString("transaction_reason");	
+	}
+	
+	
 	//获取购买的交易记录，返回值是交易项和交易项的大小，列表返回id序列
 	function get_transaction_buy_list(string user) returns(int256[],int256){
 	Table table_transaction=open_transaction_table();
@@ -582,6 +627,7 @@ contract User {
 			entry.set("commodity_id",int256(commodity_id));
 			entry.set("descr",string(descr));
 			entry.set("price",int256(price));
+			entry.set("transaction_reason","NULL");
 			//State表示当前交易的状态
 			//state=0表示发起仲裁
 			//state=1表示完成交易
@@ -658,7 +704,7 @@ contract User {
 		//-3状态修改失败
 		//-4超出仲裁时间
 		//-5用户没有权限
-		function initiate_arbitration(string user ,int256 t_id) public returns(int256){
+		function initiate_arbitration(string user ,int256 t_id,string transaction_reason) public returns(int256){
 		
 		int256 user_state=get_user_state(user);
 		if(user_state!=1)
@@ -701,7 +747,7 @@ contract User {
 		Entry entry0=table_transaction.newEntry();
 			entry0=entry;
 			entry0.set("state",int256(0));				
-	
+			entry0.set("transaction_reason",transaction_reason);
 		int256 count=table_transaction.update("key",entry0,condition);
 		if(count!=1)
 		{
