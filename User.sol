@@ -323,7 +323,7 @@ contract User {
 	return (commodity_list,entries.size());	
 	}
 	
-	//获取仲裁信息
+	//获取仲裁原因
 	function get_arbitration_reason(int256 id) public returns(string)
 	{
 		Table table_transaction=open_transaction_table();
