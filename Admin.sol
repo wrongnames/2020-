@@ -40,7 +40,7 @@ contract Admin {
         //
         // 创建表
 		//State表示当前交易的状态state=0表示发起仲裁，state=1表示完成交易
-        tf.createTable("t_transaction", "id", "user_sell,user_buy,commodity_id,price,descr,rid,state");
+        tf.createTable("t_transaction", "id", "user_sell,user_buy,commodity_id,price,descr,rid,state,transaction_reason");
 		
 		//商品表
 		// |---------------------|-------------------|
@@ -52,7 +52,7 @@ contract Admin {
         // 创建表
 		//state 1为上架，0为下架,-1为删除
 		//这里的id只是为了能够方便选取设置的真正的id在commodity_info.id
-        tf.createTable("t_commodity", "id", "name,price,picture,descr,owner,state,rid");
+        tf.createTable("t_commodity", "id", "name,price,picture,descr,owner,state,rid,commodity_type");
 		
     }
 	
@@ -383,8 +383,11 @@ contract Admin {
 	//-1不存在对应交易记录
 	//-2转账出问题
 	//-3状态修改失败	
-	function deal_arbitration(int256 t_id) public returns(int256)
+	//-4表示进行冲正
+	function deal_arbitration(int256 t_id,int256 valid) public returns(int256)
 	{
+		
+	
 		Table table_transaction=open_transaction_table();
 		Condition condition=table_transaction.newCondition();
 		condition.EQ("rid",t_id);
@@ -395,6 +398,26 @@ contract Admin {
 			return -1;
 		
 		}
+		
+		if(valid!=1)
+		{
+			Entry entry2=table_transaction.newEntry();
+		//entry2.set("rid",int256(t_id));
+		//entry2.set("id",string("key"));
+		entry2.set("state",int256(-1));
+		int256 count=table_transaction.update("key",entry2,condition);
+		if(count!=1)
+		{
+			emit DealArbitration(-4,t_id);
+			return -3;
+		}
+		return -4;
+		
+		}
+		
+		
+		
+		
 		Entry entry=entries.get(0);
 		
 		int256 result=transfer(entry.getString("user_sell"),entry.getString("user_buy"),uint256(entry.getInt("price")));
@@ -408,7 +431,7 @@ contract Admin {
 		//entry0.set("rid",int256(t_id));
 		//entry0.set("id",string("key"));
 		entry0.set("state",int256(-1));
-		int256 count=table_transaction.update("key",entry0,condition);
+	        count=table_transaction.update("key",entry0,condition);
 		if(count!=1)
 		{
 			emit DealArbitration(-3,t_id);
