@@ -404,14 +404,14 @@ contract Admin {
 			Entry entry2=table_transaction.newEntry();
 		//entry2.set("rid",int256(t_id));
 		//entry2.set("id",string("key"));
-		entry2.set("state",int256(-1));
+		entry2.set("state",int256(-2));
 		int256 count=table_transaction.update("key",entry2,condition);
 		if(count!=1)
 		{
 			emit DealArbitration(-4,t_id);
 			return -3;
 		}
-		return -4;
+		return -5;
 		
 		}
 		
